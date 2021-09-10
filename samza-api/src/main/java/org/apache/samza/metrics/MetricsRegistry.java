@@ -79,4 +79,19 @@ public interface MetricsRegistry {
    * @return Timer that was registered
    */
   Timer newTimer(String group, Timer timer);
+
+  /**
+   * Create and Register a new {@link org.apache.samza.metrics.Histogram}
+   * @param group Group for this Histogram
+   * @return Histogram that was registered
+   */
+  Histogram newHistogram(String group, String name);
+
+  /**
+   * Register existing {@link org.apache.samza.metrics.Histogram} with this registry
+   * @param group Group for this Histogram
+   * @param histogram Existing Histogram to register
+   * @return Histogram that was registered
+   */
+  Histogram newHistogram(String group, Histogram histogram);
 }

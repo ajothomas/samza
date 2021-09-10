@@ -54,6 +54,13 @@ object ApplicationMasterRestServlet {
 
             def timer(timer: Timer) =
               groupMap.put(timer.getName, timer.getSnapshot().getAverage: lang.Double)
+
+            def histogram(histogram: Histogram): Unit = {
+              val metricNameValueMap = histogram.getMetrics.asScala
+              metricNameValueMap.foreach(metricNameValuePair => groupMap.put(
+                s"${histogram.getName}.${metricNameValuePair._1}",
+                metricNameValuePair._2))
+            }
           })
       }
 

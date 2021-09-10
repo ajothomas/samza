@@ -26,13 +26,14 @@ import org.apache.samza.system.OutgoingMessageEnvelope
 import org.apache.samza.system.SystemProducer
 import org.apache.samza.system.SystemStream
 import org.apache.samza.util.Logging
+
 import java.util.HashMap
 import java.util.Map
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-
 import org.apache.samza.config.ShellCommandConfig
 
+import java.util
 import scala.collection.JavaConverters._
 
 /**
@@ -136,6 +137,12 @@ class MetricsSnapshotReporter(
                 def counter(counter: Counter) = groupMsg.put(name, counter.getCount: java.lang.Long)
                 def gauge[T](gauge: Gauge[T]) = groupMsg.put(name, gauge.getValue.asInstanceOf[Object])
                 def timer(timer: Timer) = groupMsg.put(name, timer.getSnapshot().getAverage(): java.lang.Double)
+                def histogram(histogram: Histogram): Unit = {
+                  val metricMap = histogram.getMetrics.asScala
+                  metricMap.foreach(metricNameValuePair => groupMsg.put(
+                    s"$name.${metricNameValuePair._1}",
+                    metricNameValuePair._2))
+                }
               })
             }
         }

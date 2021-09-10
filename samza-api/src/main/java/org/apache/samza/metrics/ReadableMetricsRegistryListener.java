@@ -25,4 +25,6 @@ public interface ReadableMetricsRegistryListener {
   void onGauge(String group, Gauge<?> gauge);
 
   void onTimer(String group, Timer timer);
+
+  void onHistogram(String group, Histogram histogram);
 }

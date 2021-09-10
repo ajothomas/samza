@@ -20,7 +20,6 @@
 package org.apache.samza.metrics.reporter
 
 import java.lang.management.ManagementFactory
-import java.util
 
 import org.apache.samza.util.Logging
 import javax.management.MBeanServer
@@ -48,6 +47,13 @@ class JmxReporter(server: MBeanServer) extends MetricsReporter with Logging {
               def counter(counter: Counter) = registerBean(new JmxCounter(counter, getObjectName(group, name, sources(registry))))
               def gauge[T](gauge: Gauge[T]) = registerBean(new JmxGauge(gauge.asInstanceOf[Gauge[Object]], getObjectName(group, name, sources(registry))))
               def timer(timer: Timer) = registerBean(new JmxTimer(timer, getObjectName(group, name, sources(registry))))
+              def histogram(histogram: Histogram): Unit = {
+                val metricNameValueMap = histogram.getMetrics.asScala
+                metricNameValueMap.foreach(metricNameValuePair => registerBean(new JmxGauge(
+                  metricNameValuePair._2,
+                  getObjectName(group, s"${histogram.getName}.${metricNameValuePair._1}", sources(registry))
+                )))
+              }
             })
         }
       })
@@ -66,6 +72,13 @@ class JmxReporter(server: MBeanServer) extends MetricsReporter with Logging {
         }
         def onTimer(group: String, timer: Timer) {
           registerBean(new JmxTimer(timer, getObjectName(group, timer.getName, source)))
+        }
+        def onHistogram(group: String, histogram: Histogram): Unit = {
+          val metricNameValueMap = histogram.getMetrics.asScala
+          metricNameValueMap.foreach(metricNameValuePair => registerBean(new JmxGauge(
+            metricNameValuePair._2,
+            getObjectName(group, s"${histogram.getName}.${metricNameValuePair._1}", sources(registry))
+          )))
         }
       }
     } else {
@@ -99,8 +112,12 @@ trait JmxGaugeMBean extends MetricMBean {
   def getValue(): Object
 }
 
-class JmxGauge(g: org.apache.samza.metrics.Gauge[Object], on: ObjectName) extends JmxGaugeMBean {
-  def getValue = g.getValue
+class JmxGauge(var gaugeValue: Object, var on: ObjectName) extends JmxGaugeMBean {
+  def this(gauge: org.apache.samza.metrics.Gauge[Object], on: ObjectName) = {
+    this(gauge.getValue, on)
+  }
+
+  def getValue = gaugeValue
   def objectName = on
 }
 

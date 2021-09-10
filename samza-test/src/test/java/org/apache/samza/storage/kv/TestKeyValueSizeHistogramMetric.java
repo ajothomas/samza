@@ -30,6 +30,7 @@ import org.apache.samza.config.Config;
 import org.apache.samza.config.MapConfig;
 import org.apache.samza.metrics.Counter;
 import org.apache.samza.metrics.Gauge;
+import org.apache.samza.metrics.Histogram;
 import org.apache.samza.metrics.MetricsRegistryMap;
 import org.apache.samza.metrics.MetricsVisitor;
 import org.apache.samza.metrics.Timer;
@@ -120,6 +121,11 @@ public class TestKeyValueSizeHistogramMetric {
 
           @Override
           public void timer(Timer timer) {
+
+          }
+
+          @Override
+          public void histogram(Histogram histogram) {
 
           }
         });

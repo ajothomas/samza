@@ -21,6 +21,7 @@ package org.apache.samza.util;
 
 import org.apache.samza.metrics.Counter;
 import org.apache.samza.metrics.Gauge;
+import org.apache.samza.metrics.Histogram;
 import org.apache.samza.metrics.MetricsRegistry;
 import org.apache.samza.metrics.Timer;
 
@@ -58,5 +59,15 @@ public class NoOpMetricsRegistry implements MetricsRegistry {
   @Override
   public Timer newTimer(String group, Timer timer) {
     return timer;
+  }
+
+  @Override
+  public Histogram newHistogram(String group, String name) {
+    return Histogram.builder().setName(name).build();
+  }
+
+  @Override
+  public Histogram newHistogram(String group, Histogram histogram) {
+    return histogram;
   }
 }

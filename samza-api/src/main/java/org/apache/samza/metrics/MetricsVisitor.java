@@ -31,6 +31,7 @@ public abstract class MetricsVisitor {
 
   public abstract void timer(Timer timer);
 
+  public abstract void histogram(Histogram histogram);
 
   public void visit(Metric metric) {
     if (metric instanceof Counter) {
@@ -39,6 +40,8 @@ public abstract class MetricsVisitor {
       gauge((Gauge<?>) metric);
     } else if (metric instanceof Timer) {
       timer((Timer) metric);
+    } else if (metric instanceof Histogram) {
+      histogram((Histogram) metric);
     }
   }
 }

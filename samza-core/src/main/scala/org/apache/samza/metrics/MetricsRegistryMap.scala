@@ -75,6 +75,22 @@ class MetricsRegistryMap extends ReadableMetricsRegistry with Logging {
     newTimer(group, new Timer(name))
   }
 
+  def newHistogram(group: String, name: String): Histogram = {
+    debug("Creating new histogram %s %s" format (group, name))
+    val histogram = Histogram.builder().setName(name).build()
+    newHistogram(group, histogram)
+  }
+
+  def newHistogram(group: String, histogram: Histogram): Histogram = {
+    if (putAndGetGroup(group).containsKey(histogram.getName)) {
+      debug("Updating existing histogram %s %s %s" format (group, histogram.getName, histogram))
+    }
+    putAndGetGroup(group).put(histogram.getName, histogram)
+    val realHistogram = metrics.get(group).get(histogram.getName).asInstanceOf[Histogram]
+    listeners.foreach(_.onHistogram(group, realHistogram))
+    realHistogram
+  }
+
   private def putAndGetGroup(group: String) = {
     metrics.putIfAbsent(group, new ConcurrentHashMap[String, Metric])
     metrics.get(group)

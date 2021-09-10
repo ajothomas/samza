@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.samza.metrics.Counter;
 import org.apache.samza.metrics.Gauge;
+import org.apache.samza.metrics.Histogram;
 import org.apache.samza.metrics.Timer;
 
 
@@ -35,6 +36,7 @@ public class TestMetricsRegistryImpl implements org.apache.samza.metrics.Metrics
   private Map<String, List<Counter>> counters = new HashMap<>();
   private Map<String, List<Timer>> timers = new HashMap<>();
   private Map<String, List<Gauge<?>>> gauges = new HashMap<>();
+  private Map<String, List<Histogram>> histograms = new HashMap<>();
 
   @Override
   public Counter newCounter(String group, String name) {
@@ -74,6 +76,25 @@ public class TestMetricsRegistryImpl implements org.apache.samza.metrics.Metrics
     return timer;
   }
 
+  @Override
+  public Histogram newHistogram(String group, String name) {
+    if (!histograms.containsKey(group)) {
+      histograms.put(group, new ArrayList<>());
+    }
+    Histogram histogram = Histogram.builder().setName(name).build();
+    histograms.get(group).add(histogram);
+    return histogram;
+  }
+
+  @Override
+  public Histogram newHistogram(String group, Histogram histogram) {
+    if (!histograms.containsKey(group)) {
+      histograms.put(group, new ArrayList<>());
+    }
+    histograms.get(group).add(histogram);
+    return histogram;
+  }
+
   /**
    * retrieves the Map of Timers
    * @return timers
@@ -104,6 +125,4 @@ public class TestMetricsRegistryImpl implements org.apache.samza.metrics.Metrics
   public Map<String, List<Gauge<?>>> getGauges() {
     return gauges;
   }
-
-
 }

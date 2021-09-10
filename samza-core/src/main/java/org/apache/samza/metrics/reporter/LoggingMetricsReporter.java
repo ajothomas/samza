@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.samza.metrics.Counter;
 import org.apache.samza.metrics.Gauge;
+import org.apache.samza.metrics.Histogram;
 import org.apache.samza.metrics.Metric;
 import org.apache.samza.metrics.MetricsReporter;
 import org.apache.samza.metrics.MetricsVisitor;
@@ -116,6 +117,12 @@ public class LoggingMetricsReporter implements MetricsReporter {
             @Override
             public void timer(Timer timer) {
               logMetric(source, group, timer.getName(), timer.getSnapshot().getAverage());
+            }
+
+            @Override
+            public void histogram(Histogram histogram) {
+              histogram.getMetrics().forEach((metricName, metricValue) ->
+                  logMetric(source, group, String.format("%s.%s", histogram.getName(), metricName), metricValue));
             }
           });
         }

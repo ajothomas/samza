@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.samza.metrics.Counter;
 import org.apache.samza.metrics.Gauge;
+import org.apache.samza.metrics.Histogram;
 import org.apache.samza.metrics.MetricsRegistry;
 import org.apache.samza.metrics.Timer;
 
@@ -32,6 +33,7 @@ public class TestMetricsRegistry implements MetricsRegistry {
 
   private Map<String, List<Counter>> counters = new HashedMap<>();
   private Map<String, List<Gauge<?>>> gauges = new HashedMap<>();
+  private Map<String, List<Histogram>> histograms = new HashedMap<>();
 
   public List<Counter> getCounters(String groupName) {
     return counters.get(groupName);
@@ -85,5 +87,24 @@ public class TestMetricsRegistry implements MetricsRegistry {
   @Override
   public Timer newTimer(String group, Timer timer) {
     return null;
+  }
+
+  @Override
+  public Histogram newHistogram(String group, String name) {
+    if (!histograms.containsKey(group)) {
+      histograms.put(group, new ArrayList<>());
+    }
+    Histogram histogram = Histogram.builder().setName(name).build();
+    histograms.get(group).add(histogram);
+    return histogram;
+  }
+
+  @Override
+  public Histogram newHistogram(String group, Histogram histogram) {
+    if (!histograms.containsKey(group)) {
+      histograms.put(group, new ArrayList<>());
+    }
+    histograms.get(group).add(histogram);
+    return histogram;
   }
 }
