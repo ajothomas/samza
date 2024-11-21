@@ -22,6 +22,7 @@ package org.apache.samza.storage;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,9 @@ import org.apache.samza.system.SystemStream;
 import org.apache.samza.util.StreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.samza.config.StorageConfig.*;
+
 
 /**
  * Responsible for creating the changelog stream. Used for reading, writing
@@ -128,7 +132,11 @@ public class ChangelogStreamManager {
     // Get changelog store config
     StorageConfig storageConfig = new StorageConfig(config);
     ImmutableMap.Builder<String, SystemStream> storeNameSystemStreamMapBuilder = new ImmutableMap.Builder<>();
-    storageConfig.getStoreNames().forEach(storeName -> {
+    final List<String> storeNames = storageConfig.getStoreNames();
+    LOG.info("The following store names are defined : {}", String.join(", ", storeNames));
+    final List<String> changelogStoreNames = storageConfig.getStoresWithBackupFactory(KAFKA_STATE_BACKEND_FACTORY);
+    LOG.info("Changelogs will be provisioned only for the following stores : {}", String.join(", ", changelogStoreNames));
+    changelogStoreNames.forEach(storeName -> {
       Optional<String> changelogStream = storageConfig.getChangelogStream(storeName);
       if (changelogStream.isPresent() && StringUtils.isNotBlank(changelogStream.get())) {
         storeNameSystemStreamMapBuilder.put(storeName, StreamUtil.getSystemStreamFromNames(changelogStream.get()));
